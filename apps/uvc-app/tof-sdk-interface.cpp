@@ -22,8 +22,13 @@ std::string ubootversion;
 std::string sdversion;
 
 int init_tof_sdk(char *cap_dev_path) {
+#ifdef HAS_OFFLINE
+    auto sensorsEnumerator =
+        aditof::SensorEnumeratorFactory::buildOfflineSensorEnumerator();
+#else
     auto sensorsEnumerator =
         aditof::SensorEnumeratorFactory::buildTargetSensorEnumerator();
+#endif
     if (!sensorsEnumerator) {
         DLOG(ERROR) << "Failed to construct a sensors enumerator!\n";
         return 1;

@@ -129,7 +129,7 @@ setup() {
         build_and_install_protobuf ${deps_dir}/protobuf ${deps_install_dir}/protobuf
         build_and_install_websockets ${deps_dir}/libwebsockets ${deps_install_dir}/websockets
 
-        CMAKE_OPTIONS="-DUSE_ITOF=1 -DNXP=1"
+        CMAKE_OPTIONS="-DNXP=1 -DWITH_OFFLINE=on -DUSE_DEPTH_COMPUTE_STUBS=on"
         PREFIX_PATH="${deps_install_dir}/glog;${deps_install_dir}/protobuf;${deps_install_dir}/websockets;"
 
         pushd "${build_dir}"

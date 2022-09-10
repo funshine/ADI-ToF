@@ -14,7 +14,11 @@ extern "C" {
 int main(int argc, char *argv[]) {
     char *function = NULL;
     char *cap_device_1 = NULL;
+#ifdef HAS_OFFLINE
+    const char *cap_device = NULL;
+#else
     const char *cap_device = "/dev/video1";
+#endif
     struct uvc_function_config *fc;
     struct uvc_stream *stream = NULL;
     struct video_source *src = NULL;
@@ -46,7 +50,10 @@ int main(int argc, char *argv[]) {
     events_init(&events);
 
     /* Create and initialize a video source. */
-    src = v4l2_video_source_create(cap_device);
+	if (cap_device)
+		src = v4l2_video_source_create(cap_device);
+	else
+		src = jpg_video_source_create("./img/dogs.jpg");
     if (src == NULL) {
         ret = 1;
         goto done;

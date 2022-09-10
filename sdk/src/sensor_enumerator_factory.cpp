@@ -40,6 +40,9 @@
 // (optionally) about NetworkSensorEnumerator. */
 #ifdef TARGET
 #include "connections/target/target_sensor_enumerator.h"
+#ifdef HAS_OFFLINE
+#include "connections/offline/offline_sensor_enumerator.h"
+#endif
 #else
 #include "connections/offline/offline_sensor_enumerator.h"
 #include "connections/usb/usb_sensor_enumerator.h"
