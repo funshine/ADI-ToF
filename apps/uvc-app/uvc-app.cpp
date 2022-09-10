@@ -10,6 +10,7 @@ extern "C" {
 #include "stream.h"
 #include "v4l2-source.h"
 #include "jpg-source.h"
+#include "offline-source.h"
 }
 
 int main(int argc, char *argv[]) {
@@ -17,8 +18,10 @@ int main(int argc, char *argv[]) {
     char *cap_device_1 = NULL;
 #ifdef HAS_OFFLINE
     const char *cap_device = NULL;
+    char *img_path = RESOURCES"/offline/mode3_raw.bin";
 #else
     const char *cap_device = "/dev/video1";
+    char *img_path = "./img/dogs.jpg";
 #endif
     struct uvc_function_config *fc;
     struct uvc_stream *stream = NULL;
@@ -53,8 +56,14 @@ int main(int argc, char *argv[]) {
     /* Create and initialize a video source. */
 	if (cap_device)
 		src = v4l2_video_source_create(cap_device);
-	else
-		src = jpg_video_source_create("./img/dogs.jpg");
+	else if (img_path)
+#ifdef HAS_OFFLINE
+        src = offline_video_source_create(img_path);
+#else
+        src = jpg_video_source_create(img_path);
+#endif
+    else
+        src = NULL;
     if (src == NULL) {
         ret = 1;
         goto done;
