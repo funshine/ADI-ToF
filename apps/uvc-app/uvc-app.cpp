@@ -9,6 +9,7 @@ extern "C" {
 #include "events.h"
 #include "stream.h"
 #include "v4l2-source.h"
+#include "jpg-source.h"
 }
 
 int main(int argc, char *argv[]) {

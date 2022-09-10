@@ -75,16 +75,6 @@ static void uvc_stream_uvc_process_fill_buf(void *d)
 	v4l2_queue_buffer(sink, &buf);
 }
 
-static int uvc_stream_start(struct uvc_stream *stream)
-{
-	printf("Starting video stream.\n");
-
-	if (stream->src->ops->alloc_buffers)
-		return uvc_stream_start_alloc(stream);
-	else
-		return uvc_stream_start_no_alloc(stream);
-}
-
 static int uvc_stream_start_alloc(struct uvc_stream *stream)
 {
 	struct v4l2_device *sink = uvc_v4l2_device(stream->uvc);
@@ -186,6 +176,17 @@ static int uvc_stream_start_no_alloc(struct uvc_stream *stream)
 
 	return 0;
 }
+
+static int uvc_stream_start(struct uvc_stream *stream)
+{
+	printf("Starting video stream.\n");
+
+	if (stream->src->ops->alloc_buffers)
+		return uvc_stream_start_alloc(stream);
+	else
+		return uvc_stream_start_no_alloc(stream);
+}
+
 static int uvc_stream_stop(struct uvc_stream *stream)
 {
 	struct v4l2_device *sink = uvc_v4l2_device(stream->uvc);
