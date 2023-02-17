@@ -28,11 +28,11 @@ if ( WITH_NETWORK )
 endif()
 
 file(GLOB SOURCES
-    ${CMAKE_SOURCE_DIR}/sdk/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
 file(GLOB HEADERS
-    ${CMAKE_SOURCE_DIR}/sdk/include/aditof/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/aditof/*.h
 )
 
 set(CAMERA_DIR "cameras/itof-camera")

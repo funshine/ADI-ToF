@@ -27,7 +27,7 @@ option(WITH_ROS2 "Build ros2 bindings?" OFF)
 option(WITH_NETWORK "Build network interface?" OFF)
 option(WITH_OFFLINE "Build offline interface?" OFF)
 option(USE_DEPTH_COMPUTE_STUBS "Use empty generated libs?" OFF)
-option(USE_DEPTH_COMPUTE_OPENSOURCE "Use an open source implementation?" OFF)
+option(USE_DEPTH_COMPUTE_OPENSOURCE "Use an open source implementation?" ON)
 
 ################################## Git ########################################
 include(FindGit OPTIONAL)
@@ -128,4 +128,4 @@ endif()
 configure_file(cmake/aditof-setup.iss.cmakein ${CMAKE_CURRENT_BINARY_DIR}/aditof-setup.iss @ONLY)
 
 ############################### Version #######################################
-configure_file(cmake/version.h.cmakein ${CMAKE_SOURCE_DIR}/sdk/include/aditof/version.h @ONLY)
+configure_file(cmake/version.h.cmakein ${CMAKE_CURRENT_SOURCE_DIR}/sdk/include/aditof/version.h @ONLY)

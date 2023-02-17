@@ -17,6 +17,8 @@ configure_file(ADIToFConfig.h.in ADIToFConfig.h)
 # adding submodules and subdirectories
 add_subdirectory(external/imgui)
 add_subdirectory(external/FSF)
+
+set(ADIToF_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if( WIN32 )
     set(OS_SPECIFIC_DIR windows)
 elseif ( APPLE )
@@ -29,7 +31,6 @@ else()
     message(FATAL_ERROR "Platform not supported")
 endif()
 
-set(ADIToF_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_executable(ADIToFGUI
 			   ${ADIToF_SOURCE_DIR}/wmain.cpp
 			   ${ADIToF_SOURCE_DIR}/ADIView.cpp
