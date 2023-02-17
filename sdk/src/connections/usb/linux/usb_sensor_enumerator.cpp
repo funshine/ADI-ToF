@@ -114,8 +114,12 @@ Status UsbSensorEnumerator::searchSensors() {
 
         std::string devName("ADI CMOS TOF UVC Gadget");
 
-        if (strncmp(reinterpret_cast<const char *>(cap.card), devName.c_str(),
-                    devName.length()) != 0) {
+        std::string devNameCustom("Custom 3DSmart Vision");
+
+        if ((strncmp(reinterpret_cast<const char *>(cap.card), devName.c_str(),
+                    devName.length()) != 0) && 
+            (strncmp(reinterpret_cast<const char *>(cap.card), devNameCustom.c_str(),
+                    devNameCustom.length()) != 0)) {
             close(fd);
             continue;
         }

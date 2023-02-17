@@ -162,6 +162,10 @@ aditof::Status UsbDepthSensor::open() {
         return aditof::Status::INVALID_ARGUMENT;
     }
 
+    DLOG(INFO) << "Received the following message with "
+                  "available frames from target: "
+               << responseMsg.DebugString();
+
     if (responseMsg.status() != usb_payload::Status::OK) {
         LOG(ERROR)
             << "Get available frame types operation failed on UVC gadget";
@@ -669,9 +673,23 @@ UsbDepthSensor::getAvailableControls(std::vector<std::string> &controls) const {
 
     controls.clear();
 
-    for (int i = 0; i < responseMsg.strings_payload_size(); i++) {
-        std::string controlName = responseMsg.strings_payload(i);
-        controls.push_back(controlName);
+    if (m_sensorName == "customisp") {
+        // customisp protobuffer not support string array. only one string.
+        // encode into one string, like:
+        // "controlName1,controlName2,controlName3"
+        if (responseMsg.strings_payload_size() > 0) {
+            std::string controlNames = responseMsg.strings_payload(0);
+            std::stringstream ss(controlNames);
+            std::string item;
+            while (std::getline(ss, item, ',')) {
+                controls.push_back(item);
+            }
+        }
+    } else {
+        for (int i = 0; i < responseMsg.strings_payload_size(); i++) {
+            std::string controlName = responseMsg.strings_payload(i);
+            controls.push_back(controlName);
+        }
     }
 
     return Status::OK;
@@ -685,8 +703,15 @@ aditof::Status UsbDepthSensor::setControl(const std::string &control,
     // Construct request message
     usb_payload::ClientRequest requestMsg;
     requestMsg.set_func_name(usb_payload::FunctionName::SET_CONTROL);
-    requestMsg.add_func_strings_param(control);
-    requestMsg.add_func_strings_param(value);
+    if (m_sensorName == "customisp") {
+        // customisp protobuffer not support string array. only one string.
+        // encode into one string, like:
+        // "controlName:controlValue"
+        requestMsg.add_func_strings_param(control+":"+value);
+    } else {
+        requestMsg.add_func_strings_param(control);
+        requestMsg.add_func_strings_param(value);
+    }
 
     // Send request
     std::string requestStr;
