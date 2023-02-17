@@ -13,6 +13,7 @@ ModeInfo::modeInfo ModeInfo::g_oldModes[] = {
     {3, 1024, 1024, 1, 12289, 64, 1, "pcmmp"},
     {7, 512, 512, 10, 2195, 896, 1, "qmp"},
     {10, 1024, 1024, 9, 12289, 576, 0, "mp"},
+    {11, 640, 480, 2, 640, 960, 1, "vga"},
 };
 
 ModeInfo::modeInfo ModeInfo::g_oldModesAdsd3030[] = {

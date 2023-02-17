@@ -13,7 +13,7 @@
 #include <vector>
 
 const std::vector<std::string> g_availableModes = {"pcmmp", "srqmp", "lrqmp",
-                                                   "srmp", "lrmp"};
+                                                   "srmp", "lrmp", "vga"};
 
 /**
  * @class ModeInfo

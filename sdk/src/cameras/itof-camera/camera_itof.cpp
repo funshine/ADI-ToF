@@ -58,6 +58,7 @@ CameraItof::CameraItof(
     const std::string &sdCardImageVersion)
     : m_depthSensor(depthSensor), m_devStarted(false),
       m_eepromInitialized(false), m_adsd3500Enabled(false),
+      m_customIspEnabled(false),
       m_loadedConfigData(false), m_xyzEnabled(false), m_xyzSetViaControl(false),
       m_modechange_framedrop_count(0), m_tempFiles{}, m_cameraFps(0),
       m_fsyncMode(1), m_adsd3500ImagerType(0), m_modesVersion(0) {
@@ -94,6 +95,12 @@ CameraItof::CameraItof(
         m_adsd3500Enabled = true;
     }
 
+    if (sensorName == "customisp") {
+        m_customIspEnabled = true;
+        m_eepromDeviceName = "eeprom0";
+        m_details.mode = "vga";
+    }
+
     // Look for EEPROM
     auto eeprom_iter =
         std::find_if(eeproms.begin(), eeproms.end(),
@@ -118,7 +125,14 @@ CameraItof::CameraItof(
         m_controls.emplace("imagerType", "1");
     }
 
+    if (m_customIspEnabled) {
+        m_controls.emplace("imagerType", "1");
+        m_controls["enableDepthCompute"] = "off";
+        m_controls["imagerType"] = "1";
+    }
+
     m_adsd3500_master = true;
+    m_customIsp_master = true;
 }
 
 CameraItof::~CameraItof() {
@@ -463,6 +477,16 @@ aditof::Status CameraItof::start() {
         return aditof::Status::OK;
     }
 
+    if (m_customIspEnabled) {
+        m_CameraProgrammed = true;
+        status = m_depthSensor->start();
+        if (Status::OK != status) {
+            LOG(ERROR) << "Error starting customisp.";
+            return Status::GENERIC_ERROR;
+        }
+        return aditof::Status::OK;
+    }
+
     // Program the camera firmware only once, re-starting requires
     // only setmode and start the camera.
     uint16_t reg_address = 0x256;
@@ -555,9 +579,11 @@ aditof::Status CameraItof::setFrameType(const std::string &frameType) {
     if (m_ini_depth_map.size() > 1) {
         m_ini_depth = m_ini_depth_map[frameType];
     }
-    getKeyValuePairsFromIni(m_ini_depth, m_iniKeyValPairs);
-    setAdsd3500WithIniParams(m_iniKeyValPairs);
-    configureSensorFrameType();
+    if (!m_customIspEnabled) {
+        getKeyValuePairsFromIni(m_ini_depth, m_iniKeyValPairs);
+        setAdsd3500WithIniParams(m_iniKeyValPairs);
+        configureSensorFrameType();
+    }
     setMode(frameType);
 
     status = m_depthSensor->setFrameType(*frameTypeIt);
@@ -714,7 +740,7 @@ aditof::Status CameraItof::requestFrame(aditof::Frame *frame,
         LOG(WARNING) << "Failed to get frame from device";
     }
 
-    if (!m_adsd3500Enabled) {
+    if (!m_adsd3500Enabled && !m_customIspEnabled) {
         for (unsigned int i = 0;
              i < (m_details.frameType.height * m_details.frameType.width *
                   totalCaptures);
@@ -723,6 +749,21 @@ aditof::Status CameraItof::requestFrame(aditof::Frame *frame,
             frameDataLocation[i] =
                 Convert11bitFloat2LinearVal(frameDataLocation[i]);
         }
+    }
+
+    if (m_customIspEnabled && "vga" == m_details.frameType.type) {
+        auto depth_frame_size = m_details.frameType.height *
+                                m_details.frameType.width * sizeof(uint16_t);
+        uint16_t *depthFrameLocation;
+        frame->getData("depth", &depthFrameLocation);
+        memcpy(depthFrameLocation, (uint8_t *)frameDataLocation,
+               depth_frame_size);
+
+        uint16_t *irFrameLocation;
+        frame->getData("ir", &irFrameLocation);
+        memcpy(irFrameLocation,
+               ((uint8_t *)frameDataLocation) + depth_frame_size,
+               depth_frame_size);
     }
 
     if ((m_controls["enableDepthCompute"] == "on") &&
@@ -1235,6 +1276,10 @@ aditof::Status CameraItof::loadModuleData() {
     }
 
     if (m_adsd3500Enabled) {
+        return status;
+    }
+
+    if (m_customIspEnabled) {
         return status;
     }
 
